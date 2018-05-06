@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Robot - Luka Ilic</title>
+	<style>
+		* {
+			font-family: sans-serif;
+		}
+		.container {
+			text-align: center;
+		}
+		.canvas {
+			display: inline-flex;
+		}
+		.canvas > .col > div {
+			width: 70px;
+			height: 70px;
+			background-color: red;
+			margin-left: 5px;
+			margin-bottom: 5px;
+			text-align: center;
+			vertical-align: middle;
+			line-height: 70px;
+			color: white;
+			font-weight: bold;
+			font-size: 30px;
+		}
+		#odgovor {
+			color: red;
+		}
+		input {
+			width: 800px;
+			font-size: 25px;
+		}
+		button {
+			background-color: green;
+			font-weight: bold;
+			color: white;
+			font-size: 20px;
+		}
+		.start {
+			background-color: yellow;
+		}
+		.path {
+			background-color: silver;
+		}
+		.goal {
+			background-color: #41d5dc;
+		}
+		.start, .path, .goal {
+			width: 100px;
+			height: 20px;
+			color: white;
+			font-weight: bold;
+			margin-left: 10px;
+		}
+		.content {
+			display: inline-flex;
+		}
+	</style>
+	<script>
+		window.onload = function () {
+			var dugmePosalji = document.querySelector('#posalji');
+			dugmePosalji.addEventListener('click', posaljiKomandu);
+			var clear = document.querySelector('#clear');
+			clear.addEventListener('click', clearTable);
+		}
+		function AjaxZahtev(options, callback) {
+		    var req = new XMLHttpRequest();
+		    req.open(options.metod, options.putanja, true);
+		    req.addEventListener("load", function() {
+		        if (req.status < 400) {
+		            callback(req.responseText);
+		        }
+		        else {
+		            callback(new Error("Request failed: " + req.statusText));
+		        }
+		    });
+		    req.addEventListener("error", function() {
+		        callback(new Error("Network error"));
+		    });
+		    req.send(options.zadatak || null);
+		}
+
+		function posaljiKomandu() {
+			clearTable();
+			var komanda = document.querySelector("#komanda").value;
+			if(komanda.length > 10) {
+				var polje = document.querySelector('.l'+komanda[6]+komanda[8]);
+		        polje.style.backgroundColor = 'yellow';
+		    }
+            var options = {};
+            options.putanja = "/komanda";
+            options.metod = "post";
+            sadrzaj = {
+                zadata_komanda : komanda
+            };
+            options.zadatak = JSON.stringify(sadrzaj);
+            setTimeout(function () {
+            	AjaxZahtev(options, odgovorServera);
+            }, 1000);
+		}
+
+		function odgovorServera(odgovor) {
+			document.querySelector('#odgovor').innerHTML = '';
+			//clearTable();
+			var odg = JSON.parse(odgovor.replace(/'/g, '"'));
+			if(odg.sadrzaj == "0")
+				document.querySelector('#odgovor').innerHTML = 'Unknown command!';
+			else {
+	            var polje;
+	            for(move = 0; move < odg.movementX.length; move++) {
+	            	polje = document.querySelector('.l'+odg.movementX[move]+odg.movementY[move]);
+	            	polje.style.backgroundColor = 'yellow';
+	            	polje.style.backgroundColor = 'silver';
+	            	if(move == odg.movementX.length-1)
+	            		polje.style.backgroundColor = '#41d5dc';
+	            }
+	        }
+	        document.querySelector('#komanda').value = '';
+        }
+
+        function clearTable() {
+        	var i, j;
+        	for(i = 0; i < 5; i++)
+				for(j = 0; j < 5; j++)
+					document.querySelector('.l'+i+j).style.backgroundColor = 'red';
+        }
+	</script>
+</head>
+<body>
+	<div class="container">
+		<div class="input">
+			<input type="text" id="komanda">
+			<br>
+			<button id="posalji">Send</button>
+			<button id="clear">Clear world</button>
+			<p id="odgovor"></p>
+		</div>
+		<br>
+		<div class="content">
+			<div class="canvas">
+				<div class="col">
+					<div class="l04">0,4</div>
+					<div class="l03">0,3</div>
+					<div class="l02">0,2</div>
+					<div class="l01">0,1</div>
+					<div class="l00">0,0</div>
+				</div>
+				<div class="col">
+					<div class="l14">1,4</div>
+					<div class="l13">1,3</div>
+					<div class="l12">1,2</div>
+					<div class="l11">1,1</div>
+					<div class="l10">1,0</div>
+				</div>
+				<div class="col">
+					<div class="l24">2,4</div>
+					<div class="l23">2,3</div>
+					<div class="l22">2,2</div>
+					<div class="l21">2,1</div>
+					<div class="l20">2,0</div>
+				</div>
+				<div class="col">
+					<div class="l34">3,4</div>
+					<div class="l33">3,3</div>
+					<div class="l32">3,2</div>
+					<div class="l31">3,1</div>
+					<div class="l30">3,0</div>
+				</div>
+				<div class="col">
+					<div class="l44">4,4</div>
+					<div class="l43">4,3</div>
+					<div class="l42">4,2</div>
+					<div class="l41">4,1</div>
+					<div class="l40">4,0</div>
+				</div>
+			</div>
+			<div class="colors">
+				<div class="start">START</div>
+				<div class="path">PATH</div>
+				<div class="goal">GOAL</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
